@@ -597,35 +597,37 @@ public class FrontPage extends MifosWebPage {
 
 					if (sheetname.equals("Transactions")
 							&& !isaccuralsTypeTransaction) {
-
-						Accrual = getWebDriver()
-								.findElement(
-										By.xpath("//*[@id='main']/div[3]/div/div/div/div/div/div[2]/div[3]/div[4]/div/div/div["
-												+ sheetIndex
-												+ "]/table/tbody/tr["
-												+ xlRowCount + "]/td[4]"))
-								.getText();
-						if (Accrual.equals("Accrual")) {
-							setAccuralTransactionType
-									.add(getWebDriver()
-											.findElement(
-													By.xpath("//*[@id='main']/div[3]/div/div/div/div/div/div[2]/div[3]/div[4]/div/div/div["
-															+ sheetIndex
-															+ "]/table/tbody/tr["
-															+ xlRowCount
-															+ "]/td[1]"))
-											.getText());
-						} else {
-							setAccuralTransactionID
-									.add(getWebDriver()
-											.findElement(
-													By.xpath("//*[@id='main']/div[3]/div/div/div/div/div/div[2]/div[3]/div[4]/div/div/div["
-															+ sheetIndex
-															+ "]/table/tbody/tr["
-															+ xlRowCount
-															+ "]/td[1]"))
-											.getText());
+						for (int transactionRowCount = 1; transactionRowCount <= rowCount; transactionRowCount++) {
+							Accrual = getWebDriver()
+									.findElement(
+											By.xpath("//*[@id='main']/div[3]/div/div/div/div/div/div[2]/div[3]/div[4]/div/div/div["
+													+ sheetIndex
+													+ "]/table/tbody/tr["
+													+ transactionRowCount + "]/td[4]"))
+									.getText();
+							if (Accrual.equals("Accrual")) {
+								setAccuralTransactionType
+										.add(getWebDriver()
+												.findElement(
+														By.xpath("//*[@id='main']/div[3]/div/div/div/div/div/div[2]/div[3]/div[4]/div/div/div["
+																+ sheetIndex
+																+ "]/table/tbody/tr["
+																+ xlRowCount
+																+ "]/td[1]"))
+												.getText());
+							} else {
+								setAccuralTransactionID
+										.add(getWebDriver()
+												.findElement(
+														By.xpath("//*[@id='main']/div[3]/div/div/div/div/div/div[2]/div[3]/div[4]/div/div/div["
+																+ sheetIndex
+																+ "]/table/tbody/tr["
+																+ xlRowCount
+																+ "]/td[1]"))
+												.getText());
+							}
 						}
+						
 					}
 
 					applicationCol = getWebDriver()
