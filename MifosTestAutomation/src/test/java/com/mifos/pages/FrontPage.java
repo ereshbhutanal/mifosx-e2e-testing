@@ -11,10 +11,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -31,6 +33,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.xerces.impl.dv.xs.DecimalDV;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -43,7 +46,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.ibm.icu.text.NumberFormat;
 import com.mifos.common.TenantsUtils;
+import com.mifos.pages.FrontPage.TansactionFields;
 import com.mifos.testing.framework.webdriver.LazyWebElement;
+import com.sun.jna.platform.win32.OaIdl.DECIMAL;
 
 //import org.jopendocument.dom.spreadsheet.MutableCell;
 //import org.jopendocument.dom.spreadsheet.Sheet;
@@ -636,8 +641,90 @@ public class FrontPage extends MifosWebPage {
 											+ xlRowCount + "]/td"));
 					// System.out.println("Col count  " +
 					// applicationCol.size());
-					verifyColumnDetails(xlColumnPointer, xlRowCount,
-							applicationCol, sheet, sheetname);
+					if (sheetname.equals("Transactions")) {
+						DateFormat dateFormat = new SimpleDateFormat(
+								"dd MMMM yyyy");
+						Collection<TansactionFields> appTransactionDataList = new ArrayList<TansactionFields>();
+
+						for (int row = rowNo; row <= rowCount; row++) {
+							applicationCol = getWebDriver()
+									.findElements(
+											By.xpath("//*[@id='main']/div[3]/div/div/div/div/div/div[2]/div[3]/div[4]/div/div/div["
+													+ sheetIndex
+													+ "]/table/tbody/tr["
+													+ row
+													+ "]/td"));
+							TansactionFields appTansasactionValue = new TansactionFields(
+									applicationCol.get(2).getText(),
+									applicationCol.get(3).getText(),
+									applicationCol.get(4).getText(),
+									applicationCol.get(5).getText(),
+									applicationCol.get(6).getText(),
+									applicationCol.get(7).getText(),
+									applicationCol.get(8).getText(),
+									applicationCol.get(9).getText());
+							appTransactionDataList.add(appTansasactionValue);
+							System.out
+									.println(appTransactionDataList.toArray().getClass());
+						}
+
+						Collection<TansactionFields> xlTransactionDataList = new ArrayList<>();
+						List<XLCellElement> xlRow = null;
+						boolean rowMatchSuccess = true;
+						int failRowCnt = 0;
+						int failColCnt = 0;
+						String expected = null;
+						String actual = null;
+						for (int row = rowNo; row <= rowCount; row++) {
+							xlRow = getColumnDetails(xlColumnPointer, row,
+									applicationCol, sheet, sheetname);
+							TansactionFields xlTansasactionValue = new TansactionFields(
+									(Date) xlRow.get(0).value,
+									(String) xlRow.get(1).value,
+									(String) xlRow.get(2).value,
+									(String) xlRow.get(3).value,
+									(String) xlRow.get(4).value,
+									(String) xlRow.get(5).value,
+									(String) xlRow.get(6).value,
+									(String) xlRow.get(7).value);
+							xlTransactionDataList.add(xlTansasactionValue);
+							if (!applicationCol
+									.get(xlColumnPointer)
+									.getText()
+									.equals(dateFormat.format((Date) xlRow
+											.get(0).value))) {
+								continue;
+							}
+							for (int j = 0; j < appTransactionDataList.size(); j++) {
+								if (!xlTransactionDataList.equals(appTransactionDataList
+												.toArray()[j])) {
+									rowMatchSuccess = false;
+									failRowCnt = row;
+									expected = String
+											.valueOf(xlTransactionDataList);
+									System.out
+											.println(expected);
+									actual = appTransactionDataList.toArray()
+											.toString();
+								}
+							}
+
+						}
+						if (!rowMatchSuccess) {
+							Assert.fail("Tab Name:" + sheetname
+									+ " Row number:" + failRowCnt
+									+ " Column number:" + failColCnt
+									+ " Expected result:" + expected
+									+ " Actual result:" + actual);
+
+						}
+						break;
+
+					}else {
+						verifyColumnDetails(xlColumnPointer, xlRowCount,
+								applicationCol, sheet, sheetname);
+					}
+					
 
 				} else if (sheetname.equals("Acc_Disbursement")
 						|| sheetname.equals("Acc_Disbursement1")
@@ -809,6 +896,47 @@ public class FrontPage extends MifosWebPage {
 			}
 		}
 		return elements;
+
+	}
+	
+	class TansactionFields {
+		public Date TransactionDate;
+		public String TransactionType;
+		public String Amount;
+		public String Principal;
+		public String Interest;
+		public String fees;
+		public String Penalties;
+		public String LoanBalance;
+		public String appdate;
+
+		@SuppressWarnings("unchecked")
+		public TansactionFields(Date TransactionDate, String TransactionType, String Amount, String Principal, String Interest, String fees, String Penalties, String LoanBalance) {
+			this.TransactionDate = TransactionDate;
+			this.TransactionType = TransactionType;
+			this.Amount = Amount;
+			this.Principal = Principal;
+			this.Interest = Interest;
+			this.fees = fees;
+			this.Penalties = Penalties;
+			this.LoanBalance = LoanBalance;
+		}
+
+		public TansactionFields(String appdate, String TransactionType, String Amount,
+				String Principal, String Interest, String fees, String Penalties,
+				String LoanBalance) {
+			this.appdate = appdate;
+			this.TransactionType = TransactionType;
+			this.Amount = Amount;
+			this.Principal=Principal;
+			this.Interest=Interest;
+			this.fees = fees;
+			this.Penalties = Penalties;
+			this.LoanBalance = LoanBalance;	
+		
+		}
+
+		
 
 	}
 	
